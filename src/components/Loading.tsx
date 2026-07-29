@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./styles/Loading.css";
 import { useLoading } from "../context/LoadingProvider";
+import { initialFX } from "./utils/initialFX";
 
 import Marquee from "react-fast-marquee";
 
@@ -9,29 +10,45 @@ const Loading = ({ percent }: { percent: number }) => {
   const [loaded, setLoaded] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [clicked, setClicked] = useState(false);
+  const hasTransitioned = useRef(false);
 
-  if (percent >= 100) {
-    setTimeout(() => {
-      setLoaded(true);
-      setTimeout(() => {
-        setIsLoaded(true);
-      }, 1000);
-    }, 600);
-  }
+  // Safety fallback: if we're still mounted after 4 seconds, force unmount
+  useEffect(() => {
+    const safety = setTimeout(() => {
+      if (!hasTransitioned.current) {
+        hasTransitioned.current = true;
+        try { initialFX(); } catch (_) {}
+        setIsLoading(false);
+      }
+    }, 4000);
+    return () => clearTimeout(safety);
+  }, [setIsLoading]);
 
   useEffect(() => {
-    import("./utils/initialFX").then((module) => {
-      if (isLoaded) {
-        setClicked(true);
-        setTimeout(() => {
-          if (module.initialFX) {
-            module.initialFX();
-          }
-          setIsLoading(false);
-        }, 900);
-      }
-    });
-  }, [isLoaded]);
+    if (percent >= 100 && !loaded) {
+      setLoaded(true);
+      const timer = setTimeout(() => {
+        setIsLoaded(true);
+      }, 600);
+      return () => clearTimeout(timer);
+    }
+  }, [percent, loaded]);
+
+  useEffect(() => {
+    if (isLoaded && !hasTransitioned.current) {
+      hasTransitioned.current = true;
+      setClicked(true);
+      const timer = setTimeout(() => {
+        try {
+          initialFX();
+        } catch (e) {
+          console.warn(e);
+        }
+        setIsLoading(false);
+      }, 700);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoaded, setIsLoading]);
 
   function handleMouseMove(e: React.MouseEvent<HTMLElement>) {
     const { currentTarget: target } = e;
@@ -45,9 +62,6 @@ const Loading = ({ percent }: { percent: number }) => {
   return (
     <>
       <div className="loading-header">
-        <a href="/#" className="loader-title" data-cursor="disable">
-          Logo
-        </a>
         <div className={`loaderGame ${clicked && "loader-out"}`}>
           <div className="loaderGame-container">
             <div className="loaderGame-in">
@@ -62,8 +76,8 @@ const Loading = ({ percent }: { percent: number }) => {
       <div className="loading-screen">
         <div className="loading-marquee">
           <Marquee>
-            <span> A Creative Developer</span> <span>A Creative Designer</span>
-            <span> A Creative Developer</span> <span>A Creative Designer</span>
+            <span> BUILDING INTELLIGENT ROBOTS</span> <span>BUILDING INTELLIGENT ROBOTS</span>
+            <span> BUILDING INTELLIGENT ROBOTS</span> <span>BUILDING INTELLIGENT ROBOTS</span>
           </Marquee>
         </div>
         <div
@@ -96,21 +110,15 @@ export const setProgress = (setLoading: (value: number) => void) => {
   let percent: number = 0;
 
   let interval = setInterval(() => {
-    if (percent <= 50) {
-      let rand = Math.round(Math.random() * 5);
-      percent = percent + rand;
+    if (percent < 100) {
+      percent += Math.floor(Math.random() * 6) + 4;
+      if (percent > 100) percent = 100;
       setLoading(percent);
-    } else {
-      clearInterval(interval);
-      interval = setInterval(() => {
-        percent = percent + Math.round(Math.random());
-        setLoading(percent);
-        if (percent > 91) {
-          clearInterval(interval);
-        }
-      }, 2000);
     }
-  }, 100);
+    if (percent >= 100) {
+      clearInterval(interval);
+    }
+  }, 25);
 
   function clear() {
     clearInterval(interval);
@@ -122,13 +130,14 @@ export const setProgress = (setLoading: (value: number) => void) => {
       clearInterval(interval);
       interval = setInterval(() => {
         if (percent < 100) {
-          percent++;
+          percent += 5;
+          if (percent > 100) percent = 100;
           setLoading(percent);
         } else {
           resolve(percent);
           clearInterval(interval);
         }
-      }, 2);
+      }, 15);
     });
   }
   return { loaded, percent, clear };

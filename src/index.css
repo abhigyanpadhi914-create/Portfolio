@@ -1,4 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap");
+@import "tailwindcss";
 
 :root {
   font-family: "Geist", sans-serif;
@@ -58,7 +59,12 @@ main {
 body {
   margin: 0;
   height: auto;
-  background-color: #000;
+  background-image: url('./assets/paper-texture.jpg');
+  background-size: cover;
+  background-repeat: repeat;
+  background-attachment: fixed;
+  background-position: center;
+  background-color: #eae5ec;
   flex-grow: 1;
   --cWidth: calc(100% - 30px);
   --cMaxWidth: 1920px;

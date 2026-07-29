@@ -2,7 +2,10 @@
   position: fixed;
   width: 100vw;
   height: var(--vh);
-  /* background-image: linear-gradient(#cbb1ff, #d8c4ff); */
+  background-image: url('../../assets/paper-texture.jpg');
+  background-size: cover;
+  background-repeat: repeat;
+  background-position: center;
   background-color: #eae5ec;
   z-index: 999999999;
   display: flex;
@@ -65,6 +68,9 @@
   border-radius: 5000px;
   min-height: calc(100vh + 500px);
   box-shadow: none;
+  background-image: url('../../assets/paper-texture.jpg');
+  background-size: cover;
+  background-position: center;
 }
 .loading-clicked .loading-button {
   overflow: visible;
@@ -185,7 +191,7 @@
   position: fixed;
   z-index: 9999999999;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   box-sizing: border-box;
   padding: 20px 0px;
   left: 50%;
